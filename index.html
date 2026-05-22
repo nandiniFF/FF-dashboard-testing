@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Forward — Monthly Metrics</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  /* =============================================
+     DATA BLOCK — UPDATE THIS SECTION EACH MONTH
+     ============================================= */
+  /* See the <script> tag at bottom for data */
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f3;color:#1a1a18;padding:2rem;font-size:15px}
+  .page{max-width:960px;margin:0 auto;background:#fff;border-radius:12px;padding:2rem;border:0.5px solid #e0dfd8}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid #e8e7e0}
+  .logo-area h1{font-size:22px;font-weight:600;color:#111;letter-spacing:-0.3px}
+  .logo-area p{font-size:13px;color:#888;margin-top:4px}
+  .ytd-block{text-align:right}
+  .ytd-block .label{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:0.06em}
+  .ytd-block .value{font-size:20px;font-weight:600;color:#111;margin-top:2px}
+  .section-label{font-size:11px;font-weight:600;color:#999;letter-spacing:0.07em;text-transform:uppercase;margin-bottom:10px;margin-top:1.5rem}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .metric{background:#f8f7f4;border-radius:8px;padding:14px}
+  .metric .lbl{font-size:12px;color:#888;margin-bottom:6px}
+  .metric .val{font-size:22px;font-weight:600;color:#111}
+  .metric .sub{font-size:11px;color:#aaa;margin-top:4px}
+  .grid2{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-top:1rem}
+  .grid2b{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:1rem}
+  .card{background:#fff;border:0.5px solid #e0dfd8;border-radius:12px;padding:1rem 1.25rem}
+  .card-title{font-size:11px;font-weight:600;color:#999;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-weight:600;color:#999;padding:0 0 8px;border-bottom:0.5px solid #e8e7e0;font-size:12px}
+  td{padding:7px 0;border-bottom:0.5px solid #eee;color:#222;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  .td-r{text-align:right}
+  .prog-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;flex-shrink:0}
+  .legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px}
+  .leg-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#666}
+  .leg-sq{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+  .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .bar-label{font-size:12px;color:#888;width:100px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar-track{flex:1;background:#f0efe8;border-radius:4px;height:8px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:4px}
+  .bar-val{font-size:12px;font-weight:500;color:#222;width:60px;text-align:right;flex-shrink:0}
+  .vol-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;margin-top:12px;padding-top:12px;border-top:0.5px solid #eee}
+  .vol-grid .n{font-size:18px;font-weight:600;color:#111}
+  .vol-grid .l{font-size:11px;color:#888;margin-top:2px}
+  .donor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .donor-card{text-align:center;padding:12px;background:#f8f7f4;border-radius:8px}
+  .donor-card .n{font-size:20px;font-weight:600;color:#111}
+  .donor-card .l{font-size:12px;color:#888;margin-top:4px}
+  .donor-card .s{font-size:11px;color:#bbb;margin-top:2px}
+  .footnote{font-size:11px;color:#bbb;margin-top:8px}
+  .commentary{background:#f4faf7;border-left:3px solid #1D9E75;border-radius:0 8px 8px 0;padding:14px 18px;margin-top:1rem}
+  .commentary .c-label{font-size:11px;font-weight:600;color:#0F6E56;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px}
+  .commentary p{font-size:14px;color:#333;line-height:1.75}
+  .footer{margin-top:2rem;padding-top:1rem;border-top:0.5px solid #eee;font-size:11px;color:#bbb;display:flex;justify-content:space-between}
+  @media(max-width:640px){
+    .metrics{grid-template-columns:1fr 1fr}
+    .grid2,.grid2b{grid-template-columns:1fr}
+    .donor-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="logo-area">
+      <h1>Food Forward</h1>
+      <p id="header-sub"></p>
+    </div>
+    <div class="ytd-block">
+      <div class="label">YTD pounds recovered</div>
+      <div class="value" id="ytd-lbs"></div>
+    </div>
+  </div>
+
+  <div class="section-label">Monthly highlights</div>
+  <div class="metrics">
+    <div class="metric"><div class="lbl">Total pounds recovered</div><div class="val" id="m-lbs"></div><div class="sub" id="m-lbs-sub"></div></div>
+    <div class="metric"><div class="lbl">Receiving agencies served</div><div class="val" id="m-ra"></div><div class="sub" id="m-ra-sub"></div></div>
+    <div class="metric"><div class="lbl">Produce donors</div><div class="val" id="m-donors"></div><div class="sub">Across all programs</div></div>
+    <div class="metric"><div class="lbl">Volunteer shifts</div><div class="val" id="m-shifts"></div><div class="sub" id="m-shifts-sub"></div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Pounds by program — current vs prior month</div>
+      <div class="legend">
+        <span class="leg-item"><span class="leg-sq" style="background:#1D9E75"></span><span id="cur-month-label">Current</span></span>
+        <span class="leg-item"><span class="leg-sq" style="background:#B5D4F4"></span><span id="prior-month-label">Prior</span></span>
+      </div>
+      <div style="position:relative;height:200px"><canvas id="progChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Program share of monthly pounds</div>
+      <div style="position:relative;height:160px;margin-bottom:10px"><canvas id="donutChart"></canvas></div>
+      <div class="legend" style="justify-content:center" id="donut-legend"></div>
+    </div>
+  </div>
+
+  <div class="grid2b">
+    <div class="card">
+      <div class="card-title">Receiving agencies</div>
+      <table>
+        <thead><tr><th>Program</th><th class="td-r">Monthly</th><th class="td-r">YTD</th></tr></thead>
+        <tbody id="ra-table"></tbody>
+      </table>
+      <p class="footnote">Unique EINs. Total does not sum rows — agencies may be served by multiple programs.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Volunteer engagement</div>
+      <div id="vol-bars"></div>
+      <div class="vol-grid">
+        <div><div class="n" id="v-events"></div><div class="l">total events</div></div>
+        <div><div class="n" id="v-vols"></div><div class="l">unique volunteers</div></div>
+        <div><div class="n" id="v-leads"></div><div class="l">new leads</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:1.5rem">Produce donors</div>
+  <div class="card" style="margin-top:0">
+    <div class="card-title">Donors by program</div>
+    <div class="donor-grid" id="donor-grid"></div>
+    <p class="footnote">Total unique donors across all programs. Not a cumulative sum — donors may contribute to multiple programs.</p>
+  </div>
+
+  <div class="section-label" style="margin-top:1.5rem">Director's commentary</div>
+  <div class="commentary">
+    <div class="c-label">Notes for the board</div>
+    <p id="commentary-text"></p>
+  </div>
+
+  <div class="footer">
+    <span>Food Forward — Confidential board report</span>
+    <span id="footer-date"></span>
+  </div>
+</div>
+
+<script>
+/* =============================================
+   UPDATE THIS DATA BLOCK EACH MONTH
+   ============================================= */
+const DATA = {
+  reportMonth: "February 2026",
+  dataAsOf: "March 11, 2026",
+  priorMonthLabel: "January",
+  currentMonthLabel: "February",
+
+  ytdPounds: 13091178,
+
+  monthly: {
+    totalPounds: 5412907,
+    totalRAs: 197,
+    ytdRAs: 208,
+    totalDonors: 426,
+    volShifts: 594,
+    uniqueVols: 348,
+    newLeads: 8,
+    totalVolEvents: 195,
+  },
+
+  programs: [
+    { name: "Backyard Harvest",     color: "#EF9F27", curPounds: 34997,    priorPounds: 27034,  curRA: 69,  ytdRA: 83,  donors: 107, donorsYTD: "182",        donorsNote: "" },
+    { name: "Farmers Mkt Recovery", color: "#7F77DD", curPounds: 34805,    priorPounds: 28373,  curRA: 35,  ytdRA: 37,  donors: 134, donorsYTD: "147",        donorsNote: "" },
+    { name: "The Sprout (WRP)",     color: "#378ADD", curPounds: 432806,   priorPounds: 406888, curRA: 61,  ytdRA: 61,  donors: 185, donorsYTD: "N/A",        donorsNote: "YTD actualized at year-end" },
+    { name: "Pit Stop (WRP)",       color: "#1D9E75", curPounds: 4910299,  priorPounds: 7215976,curRA: 65,  ytdRA: 66,  donors: null, donorsYTD: null,        donorsNote: "" },
+  ],
+
+  volunteerPrograms: [
+    { name: "BYH Harvests",        events: 122, shifts: 348, uniqueVols: 196, newLeads: 4 },
+    { name: "FMR Gleans",          events: 70,  shifts: 242, uniqueVols: 151, newLeads: 3 },
+    { name: "Comm. Ambassador",    events: 3,   shifts: 4,   uniqueVols: 1,   newLeads: 1 },
+  ],
+
+  commentary: "February metrics reflect strong program activity across all four programs. Pit Stop (WRP) continues to drive the majority of pound volume at 4.9M lbs this month, though this represents a seasonal decrease from January's 7.2M lbs. Volunteer engagement remained high with 195 events and 348 unique volunteers. [Replace this placeholder text with your narrative context — program highlights, seasonal factors, challenges, or strategic notes for the board.]"
+};
+/* ============================================= */
+
+function fmt(n){return n>=1000000?(n/1000000).toFixed(2)+'M':n>=1000?(n/1000).toFixed(0)+'K':n.toLocaleString()}
+function fmtFull(n){return n.toLocaleString()}
+
+document.getElementById('header-sub').textContent = 'Monthly metrics report  ·  Month of ' + DATA.reportMonth + '  ·  Data as of ' + DATA.dataAsOf;
+document.getElementById('ytd-lbs').textContent = fmtFull(DATA.ytdPounds) + ' lbs';
+document.getElementById('m-lbs').textContent = fmt(DATA.monthly.totalPounds);
+document.getElementById('m-lbs-sub').textContent = fmtFull(DATA.ytdPounds) + ' lbs YTD';
+document.getElementById('m-ra').textContent = DATA.monthly.totalRAs;
+document.getElementById('m-ra-sub').textContent = DATA.monthly.ytdRAs + ' unique YTD';
+document.getElementById('m-donors').textContent = DATA.monthly.totalDonors;
+document.getElementById('m-shifts').textContent = fmtFull(DATA.monthly.volShifts);
+document.getElementById('m-shifts-sub').textContent = DATA.monthly.uniqueVols + ' unique volunteers';
+document.getElementById('cur-month-label').textContent = DATA.currentMonthLabel;
+document.getElementById('prior-month-label').textContent = DATA.priorMonthLabel;
+document.getElementById('commentary-text').textContent = DATA.commentary;
+document.getElementById('footer-date').textContent = 'Data as of ' + DATA.dataAsOf;
+document.getElementById('v-events').textContent = DATA.monthly.totalVolEvents;
+document.getElementById('v-vols').textContent = DATA.monthly.uniqueVols;
+document.getElementById('v-leads').textContent = DATA.monthly.newLeads;
+
+const raTable = document.getElementById('ra-table');
+DATA.programs.forEach(p => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><span class="prog-dot" style="background:${p.color}"></span>${p.name}</td><td class="td-r">${p.curRA}</td><td class="td-r">${p.ytdRA}</td>`;
+  raTable.appendChild(tr);
+});
+const totRow = document.createElement('tr');
+totRow.innerHTML = `<td style="font-weight:600">Total unique</td><td class="td-r" style="font-weight:600">${DATA.monthly.totalRAs}</td><td class="td-r" style="font-weight:600">${DATA.monthly.ytdRAs}</td>`;
+raTable.appendChild(totRow);
+
+const volBars = document.getElementById('vol-bars');
+const maxEvents = Math.max(...DATA.volunteerPrograms.map(v=>v.events));
+DATA.volunteerPrograms.forEach(v => {
+  const pct = Math.round((v.events/maxEvents)*100);
+  volBars.innerHTML += `<div class="bar-row"><span class="bar-label">${v.name}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:#1D9E75"></div></div><span class="bar-val">${v.events} events</span></div>`;
+});
+
+const donorGrid = document.getElementById('donor-grid');
+DATA.programs.filter(p=>p.donors!==null).forEach(p => {
+  donorGrid.innerHTML += `<div class="donor-card"><div class="n">${p.donors}</div><div class="l">${p.name}</div><div class="s">${p.donorsYTD ? p.donorsYTD+' YTD' : p.donorsNote}</div></div>`;
+});
+
+const donutLegend = document.getElementById('donut-legend');
+const total = DATA.programs.reduce((s,p)=>s+p.curPounds,0);
+DATA.programs.forEach(p => {
+  const pct = Math.round((p.curPounds/total)*100);
+  const shortName = p.name.replace(' (WRP)','').replace(' Recovery','');
+  donutLegend.innerHTML += `<span class="leg-item"><span class="leg-sq" style="background:${p.color}"></span>${shortName} ${pct}%</span>`;
+});
+
+new Chart(document.getElementById('progChart'),{
+  type:'bar',
+  data:{
+    labels: DATA.programs.map(p=>p.name.replace(' Recovery','').replace(' (WRP)','')),
+    datasets:[
+      {label:DATA.currentMonthLabel, data:DATA.programs.map(p=>p.curPounds),  backgroundColor:'#1D9E75', borderRadius:3, barPercentage:0.45},
+      {label:DATA.priorMonthLabel,   data:DATA.programs.map(p=>p.priorPounds),backgroundColor:'#B5D4F4', borderRadius:3, barPercentage:0.45}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:11},maxRotation:15,autoSkip:false}},
+      y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:11},callback:v=>v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v}}
+    }
+  }
+});
+
+new Chart(document.getElementById('donutChart'),{
+  type:'doughnut',
+  data:{
+    labels:DATA.programs.map(p=>p.name),
+    datasets:[{data:DATA.programs.map(p=>p.curPounds),backgroundColor:DATA.programs.map(p=>p.color),borderWidth:0,hoverOffset:4}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}
+});
+</script>
+</body>
+</html>
